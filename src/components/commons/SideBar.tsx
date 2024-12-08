@@ -29,7 +29,7 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="w-16 fixed bg-[#F0627E] text-white shadow-md flex flex-col h-screen">
+        <div className="w-16  bg-[#F0627E] text-white shadow-md flex flex-col h-screen">
             <div className="p-4 flex justify-center">
                 <h1 className="text-2xl font-bold">ERP</h1>
             </div>
