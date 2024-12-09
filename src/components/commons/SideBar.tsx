@@ -11,10 +11,11 @@ type Department = {
 };
 
 const departments: Department[] = [
+    { name: 'Inicio', icon: ShoppingCart, route: '/dashboard' },
     { name: 'Ventas', icon: ShoppingCart, route: '/sales' },
     { name: 'Recursos Humanos', icon: Users, route: '/human-resources' },
     { name: 'Compras', icon: Truck, route: '/purchases' },
-    { name: 'Producción', icon: Scissors, route: '/production' },
+    { name: 'Producción', icon: Scissors, route: '/inventory' },
     { name: 'Diseño', icon: Scissors, route: '/design' },
     { name: 'Contabilidad y Finanzas', icon: BarChart2, route: '/finance' },
 ];
