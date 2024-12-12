@@ -1,6 +1,8 @@
 // app/dashboard/page.tsx
 "use client";
 
+import { FinancialStatsDashboard } from "@/components/FinancialStatsDashboard";
+
 const DashboardContainer = () => {
     const widgets = [
         { title: "Total Ventas", value: "$12,300", description: "Este mes" },
@@ -14,6 +16,7 @@ const DashboardContainer = () => {
 
             {/* Contenido Principal */}
             <main className="flex-1 p-6">
+                {/* Widgets */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {widgets.map((widget, index) => (
                         <div
@@ -29,6 +32,11 @@ const DashboardContainer = () => {
                             <p className="text-gray-500">{widget.description}</p>
                         </div>
                     ))}
+                </div>
+
+                {/* Financial Stats Dashboard */}
+                <div className="mt-8">
+                    <FinancialStatsDashboard />
                 </div>
             </main>
         </div>
