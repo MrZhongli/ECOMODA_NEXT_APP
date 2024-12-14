@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ShoppingCart, Users, Truck, Scissors, BarChart2, LogOut } from 'lucide-react';
+import Image from 'next/image'; // Importa el componente Image
+import { ShoppingCart, House, Users, Truck, Scissors, BarChart2, LogOut, Shirt } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import logo from '../../../assets/logo-removebg-preview.png'
 
 type Department = {
     name: string;
@@ -11,12 +13,12 @@ type Department = {
 };
 
 const departments: Department[] = [
-    { name: 'Inicio', icon: ShoppingCart, route: '/dashboard' },
+    { name: 'Inicio', icon: House, route: '/dashboard' },
     { name: 'Ventas', icon: ShoppingCart, route: '/sales' },
     { name: 'Recursos Humanos', icon: Users, route: '/human-resources' },
     { name: 'Compras', icon: Truck, route: '/purchases' },
     { name: 'Producción', icon: Scissors, route: '/inventory' },
-    { name: 'Diseño', icon: Scissors, route: '/design' },
+    { name: 'Diseño', icon: Shirt, route: '/design' },
     { name: 'Contabilidad y Finanzas', icon: BarChart2, route: '/finance' },
 ];
 
@@ -30,10 +32,18 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="w-16  bg-[#F0627E] text-white shadow-md flex flex-col h-screen">
+        <div className="w-16 bg-[#F0627E] text-white shadow-md flex flex-col h-screen">
+            {/* Logo */}
             <div className="p-4 flex justify-center">
-                <h1 className="text-2xl font-bold">ERP</h1>
+                <Image
+                    src={logo} // Reemplaza con la ruta de tu logo en la carpeta public
+                    alt="Logo"
+                    width={100} // Define el ancho de la imagen
+                    height={100} // Define la altura de la imagen
+                />
             </div>
+
+            {/* Navegación */}
             <nav className="flex-grow">
                 {departments.map((dept) => (
                     <div
@@ -54,6 +64,8 @@ export default function Sidebar() {
                     </div>
                 ))}
             </nav>
+
+            {/* Cerrar sesión */}
             <div
                 className="relative p-4 flex justify-center cursor-pointer hover:bg-white group transition-colors duration-300"
                 onClick={() => {
