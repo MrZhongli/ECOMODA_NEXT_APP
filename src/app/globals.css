@@ -2,10 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+/* Variables globales */
+:root {
+  /* Colores principales */
+  --primary: #f0627e; /* Rosado primario */
+  --primary-800: #c68c61; /* Rosado oscuro */
+  --primary-600: #ffccd0; /* Rosado claro */
+  --primary-200: #fbecef; /* Fondo rosado pálido */
+
+  /* Colores secundarios */
+  
+  --secondary: #4d619d; /* Azul profundo */
+  --secondary-600: #000000; /* Azul claro */
+  --secondary-200: #e5f2ff; /* Azul pálido */
 }
 
+/* Estilos base */
+body {
+  min-height: 100dvh;
+  height: 100dvh;
+  font-family: 'Quicksand', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background: #ffffff;
+  color: var(--secondary-600);
+  overflow: hidden;
+
+  /* Estilos para inputs */
+  & input {
+    outline: none;
+
+    &::placeholder {
+      color: var(--secondary-600);
+    }
+  }
+
+  /* Scroll personalizado */
+  & > div > section {
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--primary-800);
+      border-radius: 8px;
+    }
+  }
+}
+
+/* Clases personalizadas */
+.sidebar-link {
+  &:hover span {
+    opacity: 1;
+    display: inline-block;
+  }
+
+  & span {
+    transition-property: opacity, transform, display;
+    transition-duration: 0.25s;
+  }
+}
+
+@starting-style {
+  .sidebar-link span {
+    opacity: 0;
+    display: none;
+  }
+}
+
+/* Estilo de utilidades */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Estilo base adicional */
 @layer base {
   :root {
     --radius: 0.5rem;

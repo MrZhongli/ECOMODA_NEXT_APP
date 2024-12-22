@@ -32,7 +32,7 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="w-16 bg-[#F0627E] text-white shadow-md flex flex-col h-screen">
+        <div className="w-16 bg-[#F0627E] text-white shadow-md flex flex-col h-screen h-full">
             {/* Logo */}
             <div className="p-4 flex justify-center">
                 <Image

@@ -26,7 +26,7 @@ const notifications = [
 
 export default function FashionCollectionDashboard() {
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen w-full bg-gray-50">
             {/* Header */}
             <header className="bg-pink-100 p-4 shadow-md">
                 <div className="container mx-auto flex justify-between items-center">
@@ -38,7 +38,7 @@ export default function FashionCollectionDashboard() {
                 </div>
             </header>
 
-            <main className="container mx-auto mt-8 px-4">
+            <main className="w-full mx-auto mt-8 px-4">
                 {/* Collections Grid */}
                 <section className="mb-12">
                     <h2 className="text-2xl font-semibold text-gray-800 mb-6">Colecciones</h2>

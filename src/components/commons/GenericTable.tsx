@@ -31,11 +31,13 @@ function GenericTable<T extends { id: number }>({
     rowClassName
 }: GenericTableProps<T>) {
     return (
-        <Table>
-            <TableHeader>
+        <Table className="min-w-full table-auto bg-white shadow-md rounded-lg overflow-hidden">
+            <TableHeader className="bg-pink-100">
                 <TableRow>
                     {columns.map((column) => (
-                        <TableHead key={String(column.key)}>{column.header}</TableHead>
+                        <TableHead key={String(column.key)} className="text-left text-sm font-medium text-gray-600 py-2 px-4">
+                            {column.header}
+                        </TableHead>
                     ))}
                 </TableRow>
             </TableHeader>
@@ -44,16 +46,15 @@ function GenericTable<T extends { id: number }>({
                     <TableRow
                         key={item.id}
                         className={`
-                        hover:bg-gray-100 
-                        transition 
-                        duration-200 
-                        ${onRowClick ? 'cursor-pointer' : ''} 
-                        ${rowClassName ? rowClassName(item) : ''}
-                    `}
+                            ${onRowClick ? 'cursor-pointer' : ''}
+                            ${rowClassName ? rowClassName(item) : ''}
+                            hover:bg-pink-50
+                            transition duration-200
+                        `}
                         onClick={() => onRowClick && onRowClick(item)}
                     >
                         {columns.map((column) => (
-                            <TableCell key={String(column.key)}>
+                            <TableCell key={String(column.key)} className="text-sm text-gray-700 py-3 px-4">
                                 {column.formatter
                                     ? column.formatter(item[column.key])
                                     : String(item[column.key])}
