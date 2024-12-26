@@ -1,8 +1,7 @@
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="">
-      hola
-    </div>
-  );
+  // Redirigir al usuario al dashboard
+  redirect("/dashboard");
+  return null; // Este componente no necesita renderizar nada
 }
