@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.input-hover-effect:hover {
+  box-shadow: 0 0 0 2px rgba(74, 100, 255, 0.2);
+}
+
+.input-focus-effect:focus {
+  border-color: #4A64FF;
+  box-shadow: 0 0 0 2px rgba(74, 100, 255, 0.2);
+}
+
+.input-error {
+  border-color: #FF4A4A;
+}
+
+.button-hover-effect:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
