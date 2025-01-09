@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Importa el hook useRouter
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,6 +25,7 @@ export default function SalesOrders() {
     const [pedidos, setPedidos] = useState(pedidosEjemplo);
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
+    const router = useRouter(); // Inicializa el router
 
     const filtrarPedidos = () => {
         return pedidos.filter((pedido) =>
@@ -44,11 +46,13 @@ export default function SalesOrders() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Contenido Principal */}
             <main className="container mx-auto p-4">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold text-[#4d619d]">Pedidos</h1>
-                    <Button className="bg-[#4d619d] hover:bg-[#3d4f7d] text-white">
+                    <Button
+                        className="bg-[#4d619d] hover:bg-[#3d4f7d] text-white"
+                        onClick={() => router.push('sales/new')} // Navega a /new al hacer clic
+                    >
                         <Plus className="mr-2 h-4 w-4" /> Nuevo Pedido
                     </Button>
                 </div>
