@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Sidebar from "@/components/commons/SideBar";
+import { BranchProvider } from "./branch/BranchProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,8 +31,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div className="overflow-y-auto w-full h-full flex">
-          <Sidebar/>
-          {children}
+          <Sidebar />
+            <BranchProvider>
+              {children}
+            </BranchProvider>
         </div>
       </body>
     </html>
