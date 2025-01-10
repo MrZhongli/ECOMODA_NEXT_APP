@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from 'zustand'; // Una sola importación
 
 // Define el tipo para los datos de la sucursal
 interface Branch {
@@ -17,12 +17,22 @@ interface BranchStore {
     selectedBranch: Branch | null; // Sucursal seleccionada
     setBranches: (branches: Branch[]) => void; // Función para establecer las sucursales
     selectBranch: (branch: Branch) => void; // Función para seleccionar una sucursal
+    clearSelectedBranch: () => void; // Función para limpiar la sucursal seleccionada
 }
 
 // Crea el store
-export const useBranchStore = create<BranchStore>((set) => ({
+const useBranchStore = create<BranchStore>((set) => ({
     branches: [],
-    selectedBranch: null,
-    setBranches: (branches) => set(() => ({ branches })),
-    selectBranch: (branch) => set(() => ({ selectedBranch: branch })),
+    selectedBranch: JSON.parse(localStorage.getItem("selectedBranch") || "null"),
+    setBranches: (branches) => set({ branches }),
+    selectBranch: (branch) => {
+        localStorage.setItem("selectedBranch", JSON.stringify(branch));
+        set({ selectedBranch: branch });
+    },
+    clearSelectedBranch: () => {
+        localStorage.removeItem("selectedBranch");
+        set({ selectedBranch: null });
+    },
 }));
+
+export default useBranchStore;
