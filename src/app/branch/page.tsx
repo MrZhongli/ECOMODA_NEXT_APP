@@ -21,6 +21,7 @@ export default async function BranchPage() {
             message: string;
             data: { branches: Branch[] };
         }>("/branches");
+        console.log("API Response:", response);
         branches = response.data.branches;
     } catch (error) {
         console.error("Error fetching branches:", error);
