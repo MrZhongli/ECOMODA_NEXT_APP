@@ -1,24 +1,22 @@
-'use client'
-
-import React from 'react'
-import { Button } from "@/components/ui/button"
-import GenericTable from '@/components/commons/GenericTable'
+'use client';
+import { Button } from "@/components/ui/button";
+import GenericTable from '@/components/commons/GenericTable';
 
 interface Employee {
-    idCard: string
-    name: string
-    lastname: string
-    birthdate: string
-    gender: string
-    email: string
-    phone: string
-    position: string
-    department: string
-    startDate: string
+    idCard: string;
+    name: string;
+    lastname: string;
+    birthdate: string;
+    gender: string;
+    email: string;
+    phone: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
 interface EmployeeContractsCardProps {
-    employeesData: Employee[]
+    employeesData: Employee[];
 }
 
 export default function EmployeeContractsCard({ employeesData }: EmployeeContractsCardProps) {
@@ -27,23 +25,28 @@ export default function EmployeeContractsCard({ employeesData }: EmployeeContrac
         { key: 'idCard', header: 'Cédula' },
         { key: 'name', header: 'Nombre' },
         { key: 'lastname', header: 'Apellido' },
-        { key: 'birthdate', header: 'Fecha de Nacimiento', formatter: (value: string) => new Date(value).toLocaleDateString() },
+        { 
+            key: 'birthdate', 
+            header: 'Fecha de Nacimiento', 
+            formatter: (value: string) => new Date(value).toLocaleDateString()
+        },
         { key: 'gender', header: 'Género' },
         { key: 'email', header: 'Email' },
         { key: 'phone', header: 'Teléfono' },
-        { key: 'position', header: 'Puesto' },
-        { key: 'department', header: 'Departamento' },
-        { key: 'startDate', header: 'Fecha de Inicio' },
+        // Uncomment if data for these columns exists in the future
+        // { key: 'position', header: 'Puesto' },
+        // { key: 'department', header: 'Departamento' },
+        // { key: 'startDate', header: 'Fecha de Inicio' },
         {
             key: 'actions',
             header: 'Acciones',
-            formatter: (value: any, item: Employee) => (
+            formatter: (_value: any, item: Employee) => (
                 <a href="#" className="text-[#FF77AA] underline hover:text-[#FF5588]">
                     Ver detalles
                 </a>
-            )
-        }
-    ]
+            ),
+        },
+    ];
 
     return (
         <div>
@@ -53,7 +56,7 @@ export default function EmployeeContractsCard({ employeesData }: EmployeeContrac
                 <GenericTable<Employee>
                     data={employeesData}
                     columns={columns}
-                    rowClassName={(item) => item ? 'bg-pink-50 hover:bg-pink-100' : 'bg-white'}
+                    rowClassName={(item) => (item ? 'bg-pink-50 hover:bg-pink-100' : 'bg-white')}
                 />
             </div>
             <div className="mt-6 flex justify-end">
@@ -62,5 +65,5 @@ export default function EmployeeContractsCard({ employeesData }: EmployeeContrac
                 </Button>
             </div>
         </div>
-    )
+    );
 }
