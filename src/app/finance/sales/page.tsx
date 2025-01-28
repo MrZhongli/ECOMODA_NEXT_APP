@@ -36,7 +36,7 @@ export default function Component() {
     ]
 
     return (
-        <div className="w-full flex flex-col gap-6 p-8 justify-center">
+        <div className="w-full flex flex-col gap-6 p-8 justify-start">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-[#4d619d]">Módulo de Ventas</h1>
                 <div className="flex gap-4">
