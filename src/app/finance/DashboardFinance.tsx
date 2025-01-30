@@ -174,7 +174,7 @@ export default function SimplifiedDashboardFinance() {
                     </CardContent>
                     <CardFooter>
                         <Button className="w-full bg-[#f0627e] hover:bg-[#e05270] text-white">
-                        <Link href={selectedType === 'ventas' ? 'finance/sales' : 'finance/pucharses'} >
+                        <Link href={selectedType === 'ventas' ? 'finance/sales' : 'finance/purchases'} >
                             Ver Todas las {selectedType === 'ventas' ? 'Ventas' : 'Compras'}
                         </Link>
 
