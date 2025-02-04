@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image'; // Importa el componente Image
-import { ShoppingCart, House, Users, Truck, Scissors, BarChart2, LogOut, Shirt } from 'lucide-react';
+import { ShoppingCart, House, Users, Truck, Scissors, BarChart2, LogOut, Shirt,UserPlus, } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import logo from '../../../assets/logo-removebg-preview.png'
 
@@ -16,10 +16,12 @@ const departments: Department[] = [
     { name: 'Inicio', icon: House, route: '/dashboard' },
     { name: 'Ventas', icon: ShoppingCart, route: '/sales' },
     { name: 'Recursos Humanos', icon: Users, route: '/human-resources' },
+    { name: 'Clientes', icon: UserPlus, route: '/customers' },
     { name: 'Compras', icon: Truck, route: '/purchases' },
     { name: 'Producción', icon: Scissors, route: '/inventory' },
     { name: 'Diseño', icon: Shirt, route: '/design' },
     { name: 'Contabilidad y Finanzas', icon: BarChart2, route: '/finance' },
+    
 ];
 
 export default function Sidebar() {
