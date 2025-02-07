@@ -1,11 +1,52 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Eye } from "lucide-react"
-import ImageSlider from "@/components/image-slider"
+import { useState } from "react";
+import { Eye } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import ImageSlider from "@/components/image-slider";
+
+interface LoginForm {
+  email: string;
+  password: string;
+}
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginForm>();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (data: LoginForm) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setError("Credenciales incorrectas. Inténtalo de nuevo.");
+        setLoading(false);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      console.error("Error al iniciar sesión:", err);
+      setError("Error inesperado. Inténtalo de nuevo.");
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-[#FF8BA7]/10 flex items-center justify-center p-4">
@@ -20,16 +61,22 @@ export default function LoginPage() {
             <h2 className="text-3xl font-semibold mb-2">Bienvenido de vuelta</h2>
             <p className="text-gray-500 mb-8">Ingresa tus datos para continuar</p>
 
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+
+              {/* Email Input */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">Email</label>
                 <input
+                  {...register("email", { required: "El email es obligatorio" })}
                   type="email"
                   placeholder="Ingresa tu email"
                   className="w-full p-3 bg-[#FFF1F1] rounded-lg outline-none transition-colors placeholder:text-gray-400 focus:ring-2 focus:ring-[#FF8BA7]"
                 />
+                {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
               </div>
 
+              {/* Password Input */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-medium">Contraseña</label>
@@ -39,6 +86,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative">
                   <input
+                    {...register("password", { required: "La contraseña es obligatoria" })}
                     type={showPassword ? "text" : "password"}
                     placeholder="Ingresa tu contraseña"
                     className="w-full p-3 bg-[#FFF1F1] rounded-lg outline-none transition-colors placeholder:text-gray-400 pr-10 focus:ring-2 focus:ring-[#FF8BA7]"
@@ -51,49 +99,28 @@ export default function LoginPage() {
                     <Eye size={20} />
                   </button>
                 </div>
+                {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-[#FF8BA7] text-white rounded-xl p-4 font-medium hover:bg-[#FF7C9C] transition-colors"
+                disabled={loading}
+                className="w-full bg-[#FF8BA7] text-white rounded-xl p-4 font-medium hover:bg-[#FF7C9C] transition-colors disabled:opacity-50"
               >
-                Iniciar sesión
+                {loading ? "Iniciando sesión..." : "Iniciar sesión"}
               </button>
             </form>
-
-            <div className="mt-8">
-              <div className="text-center text-sm text-gray-500 mb-6">O inicia sesión con</div>
-              <div className="grid grid-cols-2 gap-4">
-                <button className="flex items-center justify-center gap-2 p-3 border-2 border-[#FFF1F1] rounded-xl hover:border-[#FF8BA7] transition-colors">
-                  <span className="text-sm font-medium">GOOGLE</span>
-                </button>
-                <button className="flex items-center justify-center gap-2 p-3 border-2 border-[#FFF1F1] rounded-xl hover:border-[#FF8BA7] transition-colors">
-                  <span className="text-sm font-medium">FACEBOOK</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-8 text-center text-sm">
-              <span className="text-gray-500">¿Todavía no tienes una cuenta? </span>
-              <a href="#" className="text-[#FF8BA7] font-medium hover:underline">
-                Crear cuenta
-              </a>
-            </div>
           </div>
         </div>
 
-        {/* Right side - Image Slider with decorative elements */}
+        {/* Right side - Image Slider */}
         <div className="hidden md:block md:w-1/2 relative bg-[#FFF1F1]">
           <div className="absolute inset-0 p-12">
             <ImageSlider />
           </div>
-          {/* Decorative shapes */}
-          <div className="absolute top-8 right-8 w-12 h-12 bg-[#FF8BA7] rounded-full opacity-50" />
-          <div className="absolute bottom-8 left-8 w-16 h-8 bg-[#FF8BA7] rounded-full opacity-30" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-[#FF8BA7] rounded-full opacity-20 blur-xl" />
         </div>
       </div>
     </div>
-  )
+  );
 }
-

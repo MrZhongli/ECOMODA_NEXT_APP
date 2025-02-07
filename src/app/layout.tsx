@@ -1,8 +1,10 @@
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Sidebar from "@/components/commons/SideBar";
 import { BranchProvider } from "./branch/BranchProvider";
+// import SessionAuthProvider from "../../context/SessionAuthProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,9 +34,11 @@ export default function RootLayout({
       >
         <div className="overflow-y-auto w-full h-full flex">
           <Sidebar />
-            <BranchProvider>
-              {children}
-            </BranchProvider>
+            {/* <SessionAuthProvider> */}
+              <BranchProvider>
+                {children}
+              </BranchProvider>
+            {/* </SessionAutnProvider> */}
         </div>
       </body>
     </html>
