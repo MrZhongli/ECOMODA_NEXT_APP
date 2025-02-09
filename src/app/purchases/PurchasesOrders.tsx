@@ -20,38 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-
-interface PurchaseOrder {
-  id: number;
-  providerRif: string;
-  employeeIdCard: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-
-  provider: {
-    rif: string;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
-  employee: {
-    idCard: string;
-    name: string;
-    lastname: string;
-  };
-
-  purchaseOrderDetails: {
-    purchase_order_Id: number;
-    materialId: number;
-    quantity: number;
-    unitPrice: number;
-    createdAt: string;
-    updatedAt: string;
-    deletedAt: string | null;
-  }[];
-}
+import { PurchaseOrder, getPurchases, deletePurchase } from '@/api/purchases'; 
 
 interface PurchaseDataProps {
   PurchasesData: PurchaseOrder[];
@@ -60,6 +29,8 @@ interface PurchaseDataProps {
 export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
   const [purchases, setPurchases] = useState<PurchaseOrder[]>([]);
   const [filter, setFilter] = useState('all');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [purchaseToDelete, setPurchaseToDelete] = useState<PurchaseOrder | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -67,11 +38,35 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
     setPurchases(PurchasesData || []);
   }, [PurchasesData]);
 
-  // Función para calcular el total de la orden de compra
   const calculateTotal = (purchase: PurchaseOrder) => {
     return purchase.purchaseOrderDetails
-    .reduce((total, item) => total + item.quantity * parseFloat(item.unitPrice.toString()), 0)
+      .reduce((total, item) => total + item.quantity * parseFloat(item.unitPrice.toString()), 0)
       .toFixed(2);
+  };
+
+  const handleDeleteClick = (purchase: PurchaseOrder) => {
+    setPurchaseToDelete(purchase);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (purchaseToDelete) {
+      const success = await deletePurchase(purchaseToDelete.id); 
+      if (success) {
+ 
+        setPurchases(purchases.filter(p => p.id !== purchaseToDelete.id));
+        console.log('Orden de compra eliminada:', purchaseToDelete.id);
+      } else {
+        console.error('Error al eliminar la orden de compra');
+      }
+      setIsDeleteModalOpen(false);
+      setPurchaseToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setPurchaseToDelete(null);
   };
 
   return (
@@ -121,7 +116,6 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
             <Button className="bg-[#f0627e] hover:bg-[#e05270] text-white gap-2" 
             onClick={() => router.push('/purchases/NewOrder')}
             >
-              
               <Plus className="h-4 w-4" /> Nueva orden
             </Button>
           </div>
@@ -143,7 +137,6 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
             <TableBody>
               {purchases.length > 0 ? (
                 purchases.map((purchase) => (
-                  
                   <TableRow
                     key={purchase.id}
                     className="hover:bg-gray-50 transition-colors"
@@ -175,7 +168,9 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>Ver detalles</DropdownMenuItem>
                           <DropdownMenuItem>Editar</DropdownMenuItem>
-                          <DropdownMenuItem>Eliminar</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteClick(purchase)}>
+                            Eliminar
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -192,6 +187,22 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
           </Table>
         </div>
       </div>
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">¿Estás seguro de que deseas eliminar esta orden de compra?</h2>
+            <div className="flex justify-end gap-4">
+              <Button variant="outline" onClick={handleCancelDelete}>
+                Cancelar
+              </Button>
+              <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={handleConfirmDelete}>
+                Eliminar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
