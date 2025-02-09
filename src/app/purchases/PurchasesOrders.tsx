@@ -1,9 +1,10 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Search, Plus, MoreHorizontal, ChevronDown } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, Plus, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -11,51 +12,67 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
-// Datos de ejemplo
-const orders = [
-  {
-    reference: "PO0012",
-    date: "27/12/2024",
-    supplier: "Accesorios y más",
-    buyer: "Admin",
-    status: "pending",
-    total: 7976.40,
-    invoiceStatus: "pending",
-    expectedDelivery: "29/12/2024"
-  },
-  {
-    reference: "PO0011",
-    date: "26/12/2024",
-    supplier: "Hilos y Telas S.A.",
-    buyer: "Admin",
-    status: "received",
-    total: 5432.80,
-    invoiceStatus: "invoiced",
-    expectedDelivery: "28/12/2024"
-  },
-  {
-    reference: "PO0010",
-    date: "25/12/2024",
-    supplier: "Textiles Express",
-    buyer: "Admin",
-    status: "pending",
-    total: 3245.60,
-    invoiceStatus: "pending",
-    expectedDelivery: "27/12/2024"
-  }
-]
+interface PurchaseOrder {
+  id: number;
+  providerRif: string;
+  employeeIdCard: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 
-export default function PurchaseOrders() {
-  const [filter, setFilter] = useState('all')
+  provider: {
+    rif: string;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
+  employee: {
+    idCard: string;
+    name: string;
+    lastname: string;
+  };
+
+  purchaseOrderDetails: {
+    purchase_order_Id: number;
+    materialId: number;
+    quantity: number;
+    unitPrice: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+  }[];
+}
+
+interface PurchaseDataProps {
+  PurchasesData: PurchaseOrder[];
+}
+
+export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
+  const [purchases, setPurchases] = useState<PurchaseOrder[]>([]);
+  const [filter, setFilter] = useState('all');
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log("Datos recibidos:", PurchasesData);
+    setPurchases(PurchasesData || []);
+  }, [PurchasesData]);
+
+  // Función para calcular el total de la orden de compra
+  const calculateTotal = (purchase: PurchaseOrder) => {
+    return purchase.purchaseOrderDetails
+    .reduce((total, item) => total + item.quantity * parseFloat(item.unitPrice.toString()), 0)
+      .toFixed(2);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -73,8 +90,8 @@ export default function PurchaseOrders() {
         <div className="mb-6 flex items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input 
-              placeholder="Buscar órdenes..." 
+            <Input
+              placeholder="Buscar órdenes..."
               className="pl-10"
             />
           </div>
@@ -101,7 +118,10 @@ export default function PurchaseOrders() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button className="bg-[#f0627e] hover:bg-[#e05270] text-white gap-2">
+            <Button className="bg-[#f0627e] hover:bg-[#e05270] text-white gap-2" 
+            onClick={() => router.push('/purchases/NewOrder')}
+            >
+              
               <Plus className="h-4 w-4" /> Nueva orden
             </Button>
           </div>
@@ -117,61 +137,61 @@ export default function PurchaseOrders() {
                 <TableHead>Comprador</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Total</TableHead>
-                <TableHead>Estado Facturación</TableHead>
-                <TableHead>Entrega Esperada</TableHead>
                 <TableHead className="w-[40px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => (
-                <TableRow 
-                  key={order.reference}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <TableCell className="font-medium">{order.reference}</TableCell>
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>{order.supplier}</TableCell>
-                  <TableCell>{order.buyer}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant="secondary"
-                      className={
-                        order.status === 'pending' 
-                          ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
-                          : 'bg-green-100 text-green-800 hover:bg-green-100'
-                      }
-                    >
-                      {order.status === 'pending' ? 'Pendiente' : 'Recibida'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    ${order.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
-                  </TableCell>
-                  <TableCell>
-                    {order.invoiceStatus === 'pending' ? 'Pendiente de Facturar' : 'Facturado'}
-                  </TableCell>
-                  <TableCell>{order.expectedDelivery}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Eliminar</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {purchases.length > 0 ? (
+                purchases.map((purchase) => (
+                  
+                  <TableRow
+                    key={purchase.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  > 
+                    <TableCell className="font-medium">{purchase.id}</TableCell>
+                    <TableCell>{new Date(purchase.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{purchase.provider.name}</TableCell>
+                    <TableCell>{purchase.employee.name}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={
+                          purchase.deletedAt
+                            ? 'bg-red-100 text-red-800 hover:bg-red-100'
+                            : 'bg-green-100 text-green-800 hover:bg-green-100'
+                        }
+                      >
+                        {purchase.deletedAt ? 'Eliminada' : 'Activa'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">${calculateTotal(purchase)}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>Ver detalles</DropdownMenuItem>
+                          <DropdownMenuItem>Editar</DropdownMenuItem>
+                          <DropdownMenuItem>Eliminar</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-4 text-gray-500">
+                    No hay órdenes de compra disponibles.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
       </div>
     </div>
-  )
+  );
 }
-
