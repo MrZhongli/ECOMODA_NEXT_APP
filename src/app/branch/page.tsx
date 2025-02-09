@@ -1,4 +1,3 @@
-"use server"
 import { fetchAPI } from "@/api/config/api";
 import BranchContainer from "./BranchContainer";
 
