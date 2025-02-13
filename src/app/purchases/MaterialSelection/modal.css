@@ -1,0 +1,54 @@
+/* modal.css */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.is-open {
+    display: flex; /* Muestra el modal cuando está abierto */
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.input-field {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    padding: 10px; /* Espaciado interno */
+    margin: 10px 0; /* Margen superior e inferior */
+    border: 1px solid #ccc; /* Borde */
+    border-radius: 4px; /* Bordes redondeados */
+}
+
+.button-container {
+    display: flex; /* Usar flexbox para alinear los botones */
+    justify-content: space-between; /* Espacio entre los botones */
+    margin-top: 20px; /* Margen superior para separar de los inputs */
+}
+
+.edit-button {
+    background-color: yellow; /* Color amarillo para el botón de editar */
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-right: 10px; /* Espacio a la derecha */
+}
+
+.delete-button {
+    background-color: red; /* Color rojo para el botón de eliminar */
+    border: none;
+    padding: 10px 15px;
+    color: white; /* Texto blanco para mejor contraste */
+    cursor: pointer;
+}
