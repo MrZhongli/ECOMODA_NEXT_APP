@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { DollarSign, ShoppingCart, TrendingUp, ArrowUpRight, ArrowDownRight, Users, Package } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import AccountBalanceReport from './AccountBalanceReport'
+import { DetailedBalanceSheet } from './DetailedBalanceSheet'
 
 interface SummaryCardProps {
     title: string
@@ -275,6 +276,9 @@ export default function SimplifiedDashboardFinance() {
                             </TableBody>
                         </Table>
                     </CardContent>
+                    <div>
+                        <DetailedBalanceSheet/>
+                    </div>
                     <CardFooter>
                         <Button className="w-full bg-[#f0627e] hover:bg-[#e05270] text-white">
                             Ver Todas las {selectedType === 'ventas' ? 'Ventas' : 'Compras'}

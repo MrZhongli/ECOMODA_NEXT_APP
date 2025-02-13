@@ -29,16 +29,19 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      // Iniciar sesión con next-auth
       const res = await signIn("credentials", {
         email: data.email,
         password: data.password,
-        redirect: false,
+        redirect: false, // Evita la redirección automática
       });
 
       if (res?.error) {
+        // Si hay un error, muestra un mensaje
         setError("Credenciales incorrectas. Inténtalo de nuevo.");
         setLoading(false);
       } else {
+        // Si la autenticación es exitosa, redirige al dashboard
         router.push("/dashboard");
       }
     } catch (err) {
