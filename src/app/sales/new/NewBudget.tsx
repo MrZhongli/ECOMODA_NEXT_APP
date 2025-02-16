@@ -220,10 +220,10 @@ const NewBudget = () => {
                         </TableBody>
                     </Table>
                 )}
-
-                <Button onClick={submitSale} className="mt-4 w-full">
+                <Button onClick={submitSale} className="mt-4 w-full bg-[#f0627e] hover:bg-[#d6546f] text-white p-2 text-sm">
                     Save Sale
                 </Button>
+
             </div>
         </div>
     );
