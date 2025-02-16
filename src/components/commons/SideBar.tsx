@@ -41,6 +41,8 @@ export function Sidebar() {
 
 	const pathName = usePathname();
 
+	if (["/login", "/register"].includes(pathName)) return null;
+
 	return (
 		<aside
 			className={`${
