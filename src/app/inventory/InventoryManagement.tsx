@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,48 +16,41 @@ import GenericTable from '@/components/commons/GenericTable'
 type InventoryItem = {
   id: number;
   name: string;
-  category: string;
-  stock: number;
-  price: number;
   description: string;
+  size: string;
+  price: string;
+  collectionId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 }
 
-// Datos de inventario con el campo "id"
-const inventoryData: InventoryItem[] = [
-  {
-    id: 1,
-    name: "Vestido Floral",
-    category: "Vestidos",
-    stock: 15,
-    price: 49.99,
-    description: "Vestido floral de temporada, ideal para primavera.",
-  },
-  {
-    id: 2,
-    name: "Pantalón Casual",
-    category: "Pantalones",
-    stock: 5,
-    price: 39.99,
-    description: "Pantalón casual cómodo para uso diario.",
-  },
-  // Agregar más ítems si es necesario
-];
-
 const InventoryManagement: React.FC = () => {
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('Todas las categorías');
-  const [stockFilter, setStockFilter] = useState('Todas');
+  const [sizeFilter, setSizeFilter] = useState('Todas las tallas');
+  const [collectionFilter, setCollectionFilter] = useState('Todas las colecciones');
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/products');
+        const data = await response.json();
+        setInventoryData(data.products);
+      } catch (error) {
+        console.error('Error fetching inventory data:', error);
+      }
+    };
+
+    fetchInventory();
+  }, []);
 
   // Filtrar los datos del inventario según las búsquedas y filtros
   const filteredInventory = inventoryData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'Todas las categorías' || item.category === categoryFilter;
-    const matchesStock =
-      stockFilter === 'Todas' ||
-      (stockFilter === 'En stock' && item.stock > 10) ||
-      (stockFilter === 'Stock bajo' && item.stock > 0 && item.stock <= 10) ||
-      (stockFilter === 'Fuera de stock' && item.stock === 0);
-    return matchesSearch && matchesCategory && matchesStock;
+    const matchesSize = sizeFilter === 'Todas las tallas' || item.size === sizeFilter;
+    const matchesCollection = collectionFilter === 'Todas las colecciones' || item.collectionId.toString() === collectionFilter;
+    return matchesSearch && matchesSize && matchesCollection;
   });
 
   // Definir columnas para la tabla
@@ -68,26 +61,17 @@ const InventoryManagement: React.FC = () => {
       formatter: (name: string) => <span className="font-medium">{name}</span>
     },
     {
-      key: 'category',
-      header: 'Categoría'
-    },
-    {
-      key: 'stock',
-      header: 'Existencias',
-      formatter: (stock: number) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold
-          ${stock === 0 ? 'bg-red-100 text-red-800' :
-            stock <= 10 ? 'bg-yellow-100 text-yellow-800' :
-              'bg-green-100 text-green-800'}`}>
-          {stock === 0 ? 'Fuera de stock' :
-            stock <= 10 ? 'Stock bajo' : 'En stock'} ({stock})
-        </span>
-      )
+      key: 'size',
+      header: 'Talla'
     },
     {
       key: 'price',
       header: 'Precio',
-      formatter: (price: number) => price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+      formatter: (price: string) => parseFloat(price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+    },
+    {
+      key: 'description',
+      header: 'Descripción'
     }
   ]
 
@@ -154,18 +138,21 @@ const InventoryManagement: React.FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full md:w-auto">
-                {categoryFilter} <span className="ml-2">▼</span>
+                {sizeFilter} <span className="ml-2">▼</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setCategoryFilter('Todas las categorías')}>
-                Todas las categorías
+              <DropdownMenuItem onClick={() => setSizeFilter('Todas las tallas')}>
+                Todas las tallas
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCategoryFilter('Vestidos')}>
-                Vestidos
+              <DropdownMenuItem onClick={() => setSizeFilter('S')}>
+                S
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCategoryFilter('Pantalones')}>
-                Pantalones
+              <DropdownMenuItem onClick={() => setSizeFilter('M')}>
+                M
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSizeFilter('L')}>
+                L
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -173,21 +160,18 @@ const InventoryManagement: React.FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full md:w-auto">
-                {stockFilter} <span className="ml-2">▼</span>
+                {collectionFilter} <span className="ml-2">▼</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setStockFilter('Todas')}>
-                Todas
+              <DropdownMenuItem onClick={() => setCollectionFilter('Todas las colecciones')}>
+                Todas las colecciones
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStockFilter('En stock')}>
-                En stock
+              <DropdownMenuItem onClick={() => setCollectionFilter('1')}>
+                Colección 1
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStockFilter('Stock bajo')}>
-                Stock bajo
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStockFilter('Fuera de stock')}>
-                Fuera de stock
+              <DropdownMenuItem onClick={() => setCollectionFilter('2')}>
+                Colección 2
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
