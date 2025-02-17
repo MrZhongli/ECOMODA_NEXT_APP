@@ -32,7 +32,7 @@ interface Sale {
         productId: number;
         quantity: number;
         unitPrice: string;
-    }[];
+    }[]; 
 }
 
 interface SalesDataProps {
@@ -136,7 +136,9 @@ export default function SalesData({ salesData }: SalesDataProps) {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                                    <DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => router.push(`/sales/${sale.id}`)} // Navegar a la página de detalles de la venta
+                                                    >
                                                         <Eye className="mr-2 h-4 w-4" /> Ver detalles
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>

@@ -1,37 +1,107 @@
-'use client'
+"use client"
+import React, { useEffect, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import React from 'react'
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-// Datos ficticios para la venta 1
-const venta1 = {
-    id: 1,
-    cliente: "Cliente 1",
-    direccionFactura: "Dirección 1",
-    direccionEntrega: "Entrega 1",
-    validez: "30 días",
-    tarifa: "Tarifa 1",
-    plazoPago: "Plazo 1",
-    productos: [
-        { id: 1, nombre: 'Producto A', descripcion: 'Descripción del Producto A', cantidad: 2, precio: 100, descuento: 10 },
-        { id: 2, nombre: 'Producto B', descripcion: 'Descripción del Producto B', cantidad: 1, precio: 150, descuento: 0 },
-    ],
-    estado: "Pendiente"
+interface SaleDetail {
+    productId: string;
+    quantity: number;
+    unitPrice: number;
 }
 
-const calcularSubtotal = (producto: any) => {
-    return producto.precio * producto.cantidad * (1 - producto.descuento / 100)
+interface Customer {
+    idCard: string;
+    name: string;
+    lastname: string;
+    email: string;
+    phone: string;
+    address: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
-export default function SalesBudget() {
+interface Branch {
+    id: number;
+    name: string;
+    address: string;
+    phone: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+}
+
+interface SaleData {
+    id: number;
+    description: string;
+    customerId: string;
+    branchId: number;
+    brandId: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    customer: Customer | null;
+    branch: Branch | null;
+    saleDetail: SaleDetail[];
+}
+
+interface SalesBudgetProps {
+    sale: SaleData | null;
+}
+
+const calcularSubtotal = (item: SaleDetail) => {
+    return item.unitPrice * item.quantity;
+}
+
+export default function SalesBudget({ sale }: SalesBudgetProps) {
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (sale) {
+            setIsLoading(false);
+            console.log("Sale Data:", sale);  // Log the sale data here
+        } else {
+            setError("No se encontraron datos de la venta.");
+            setIsLoading(false);
+        }
+    }, [sale]);
+    
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <p className="text-blue-500 text-lg">Cargando datos...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <p className="text-red-500 text-lg">{error}</p>
+            </div>
+        );
+    }
+
+    if (!sale) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <p className="text-red-500 text-lg">No se encontraron datos de la venta.</p>
+            </div>
+        );
+    }
+
+    // Extraer datos del cliente y la sucursal
+    const customerName = sale.customer ? `${sale.customer.name} ${sale.customer.lastname}` : 'Cliente no disponible';
+    const branchName = sale.branch ? sale.branch.name : 'Sucursal no disponible';
+
     return (
         <div className="min-h-screen bg-white">
             {/* Barra de Breadcrumb */}
             <div className="bg-white border-b p-4">
                 <div className="container mx-auto">
-                    <span className="text-[#4d619d]">Ventas / Detalle / {venta1.id}</span>
+                    <span className="text-[#4d619d]">Ventas / Detalle / {sale.customerId}</span>
                 </div>
             </div>
 
@@ -55,18 +125,15 @@ export default function SalesBudget() {
 
             {/* Contenido Principal */}
             <main className="container mx-auto p-4">
-                <h1 className="text-2xl font-bold text-[#4d619d] mb-6">Detalle de Venta #{venta1.id}</h1>
+                <h1 className="text-2xl font-bold text-[#4d619d] mb-6">{sale.description || 'Sin descripción'}</h1>
 
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                     <div>
-                        <p><strong>Cliente:</strong> {venta1.cliente}</p>
-                        <p><strong>Dirección de Factura:</strong> {venta1.direccionFactura}</p>
-                        <p><strong>Dirección de Entrega:</strong> {venta1.direccionEntrega}</p>
-                    </div>
-                    <div>
-                        <p><strong>Validez:</strong> {venta1.validez}</p>
-                        <p><strong>Tarifa:</strong> {venta1.tarifa}</p>
-                        <p><strong>Plazos de Pago:</strong> {venta1.plazoPago}</p>
+                        <p><strong>Cliente:</strong> {customerName}</p>
+                        <p><strong>Cliente ID:</strong> {sale.customerId}</p>
+                        <p><strong>Sucursal:</strong> {branchName}</p>
+                        <p><strong>Sucursal ID:</strong> {sale.branchId}</p>
+                        <p><strong>Marca ID:</strong> {sale.brandId}</p>
                     </div>
                 </div>
 
@@ -79,33 +146,39 @@ export default function SalesBudget() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Producto</TableHead>
-                                    <TableHead>Descripción</TableHead>
+                                    <TableHead>Producto ID</TableHead>
                                     <TableHead>Cantidad</TableHead>
                                     <TableHead>Precio unitario</TableHead>
-                                    <TableHead>Descuento (%)</TableHead>
                                     <TableHead>Subtotal</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {venta1.productos.map((producto, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>{producto.nombre}</TableCell>
-                                        <TableCell>{producto.descripcion}</TableCell>
-                                        <TableCell>{producto.cantidad}</TableCell>
-                                        <TableCell>{producto.precio}</TableCell>
-                                        <TableCell>{producto.descuento}</TableCell>
-                                        <TableCell>{calcularSubtotal(producto).toFixed(2)}</TableCell>
+                                {sale.saleDetail && sale.saleDetail.length > 0 ? (
+                                    sale.saleDetail.map((item, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell>{item.productId}</TableCell>
+                                            <TableCell>{item.quantity}</TableCell>
+                                            <TableCell>
+                                                {isNaN(Number(item.unitPrice)) ? "Precio inválido" : Number(item.unitPrice).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell>{calcularSubtotal(item).toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center">
+                                            No hay detalles de venta disponibles
+                                        </TableCell>
                                     </TableRow>
-                                ))}
+                                )}
                             </TableBody>
                         </Table>
                     </TabsContent>
                     <TabsContent value="otra">
-                        <p><strong>Estado:</strong> {venta1.estado}</p>
+                        <p><strong>Estado:</strong> Pendiente</p>
                     </TabsContent>
                 </Tabs>
             </main>
         </div>
-    )
+    );
 }

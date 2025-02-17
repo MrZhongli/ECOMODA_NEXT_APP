@@ -24,9 +24,9 @@ export interface Branch {
 
 export interface SaleDetail {
     saleId: number;
-    productId: number;
+    productId: string; // Cambiado a string para coincidir con el componente
     quantity: number;
-    unitPrice: string; // Podrías convertirlo a number si es necesario para cálculos
+    unitPrice: number; // Cambiado a number ya que lo usas en cálculos
 }
 
 export interface Sale {
@@ -38,8 +38,8 @@ export interface Sale {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
-    customer: Customer;
-    branch: Branch;
+    customer: Customer | null; // Hacerlo nullable
+    branch: Branch | null; // Hacerlo nullable
     saleDetail: SaleDetail[];
 }
 
