@@ -24,3 +24,19 @@ export async function getSale(SaleId: string): Promise<Sale | null> {
         return null;
     }
 }
+
+
+// utils/fetchSales.ts
+export const fetchSales = async () => {
+    try {
+        const response = await fetch('http://localhost:8000/sales');
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos de las ventas');
+        }
+        const data = await response.json();
+        return data.sales; // Devuelve el array de ventas
+    } catch (error) {
+        console.error('Error fetching sales:', error);
+        return [];
+    }
+};
