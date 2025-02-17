@@ -203,7 +203,7 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetails(purchase.id)}>
+                          <DropdownMenuItem onClick={() => router.push(`/purchases/${purchase.id}`)}>
                             Ver detalles
                           </DropdownMenuItem>
                           <DropdownMenuItem>Editar</DropdownMenuItem>
