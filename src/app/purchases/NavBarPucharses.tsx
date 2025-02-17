@@ -10,11 +10,9 @@ type PucharsesSection = {
 };
 
 const PucharsesSections: PucharsesSection[] = [
-    { name: 'Ordenes', route: '/Pucharses/orders' },
-    { name: 'Proveedores', route: '/Pucharses/vendors' },
-    { name: 'Inventario', route: '/Pucharses/inventory' },
-    { name: 'Informes', route: '/sales/reports' },
-    { name: 'Configuración', route: '/Pucharses/settings' },
+    { name: 'Ordenes', route: '/purchases' },
+    { name: 'Inventario', route: '../inventory' },
+    { name: 'detalles de compra', route: '/purchases/details' },
 ];
 
 export default function NavBarPucharses() {

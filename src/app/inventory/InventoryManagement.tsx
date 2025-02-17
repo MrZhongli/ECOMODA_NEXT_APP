@@ -24,26 +24,17 @@ type InventoryItem = {
   updatedAt: string;
   deletedAt: string | null;
 }
+interface InventoryDataProps {
+  inventoryData: InventoryItem[];
+}
 
-const InventoryManagement: React.FC = () => {
-  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+export default function InventoryManagement({ inventoryData }: InventoryDataProps) {
+  const [inventory, setInventory] = useState(inventoryData);
   const [searchQuery, setSearchQuery] = useState('');
   const [sizeFilter, setSizeFilter] = useState('Todas las tallas');
   const [collectionFilter, setCollectionFilter] = useState('Todas las colecciones');
 
-  useEffect(() => {
-    const fetchInventory = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/products');
-        const data = await response.json();
-        setInventoryData(data.products);
-      } catch (error) {
-        console.error('Error fetching inventory data:', error);
-      }
-    };
 
-    fetchInventory();
-  }, []);
 
   // Filtrar los datos del inventario según las búsquedas y filtros
   const filteredInventory = inventoryData.filter(item => {
@@ -52,6 +43,7 @@ const InventoryManagement: React.FC = () => {
     const matchesCollection = collectionFilter === 'Todas las colecciones' || item.collectionId.toString() === collectionFilter;
     return matchesSearch && matchesSize && matchesCollection;
   });
+
 
   // Definir columnas para la tabla
   const tableColumns = [
@@ -186,5 +178,3 @@ const InventoryManagement: React.FC = () => {
     </div>
   )
 }
-
-export default InventoryManagement;

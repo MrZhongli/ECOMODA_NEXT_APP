@@ -60,6 +60,7 @@ interface PurchaseDataProps {
 export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
   const [purchases, setPurchases] = useState<PurchaseOrder[]>([]);
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -67,11 +68,37 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
     setPurchases(PurchasesData || []);
   }, [PurchasesData]);
 
+  // Función para filtrar las órdenes de compra
+  const filteredPurchases = purchases.filter((purchase) => {
+    const matchesSearch =
+      purchase.employee.name.toLowerCase().includes(search.toLowerCase()) ||
+      purchase.employee.lastname.toLowerCase().includes(search.toLowerCase()) ||
+      purchase.provider.name.toLowerCase().includes(search.toLowerCase()) ||
+      purchase.id.toString().includes(search) ||
+      purchase.provider.rif.toString().includes(search);
+
+    const matchesFilter =
+      filter === 'all' ||
+      (filter === 'pending' && !purchase.deletedAt) ||
+      (filter === 'received' && purchase.deletedAt) ||
+      (filter === 'invoiced' && purchase.deletedAt);
+
+    return matchesSearch && matchesFilter;
+  });
+
   // Función para calcular el total de la orden de compra
   const calculateTotal = (purchase: PurchaseOrder) => {
+    if (!purchase.purchaseOrderDetails || !Array.isArray(purchase.purchaseOrderDetails)) {
+      return "0.00";
+    }
     return purchase.purchaseOrderDetails
-    .reduce((total, item) => total + item.quantity * parseFloat(item.unitPrice.toString()), 0)
+      .reduce((total, item) => total + item.quantity * parseFloat(item.unitPrice.toString()), 0)
       .toFixed(2);
+  };
+
+  // Función para redirigir al detalle de la orden de compra
+  const handleViewDetails = (id: number) => {
+    router.push(`/purchases/${id}`);
   };
 
   return (
@@ -88,13 +115,19 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
       {/* Main Content */}
       <div className="container mx-auto py-6">
         <div className="mb-6 flex items-center justify-between gap-4">
+          {/* Barra de Búsqueda */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
+              type="text"
               placeholder="Buscar órdenes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
             />
           </div>
+
+          {/* Filtros y botón de nueva orden */}
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -118,15 +151,16 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button className="bg-[#f0627e] hover:bg-[#e05270] text-white gap-2" 
-            onClick={() => router.push('/purchases/NewOrder')}
+            <Button
+              className="bg-[#f0627e] hover:bg-[#e05270] text-white gap-2"
+              onClick={() => router.push('/purchases/NewOrder')}
             >
-              
               <Plus className="h-4 w-4" /> Nueva orden
             </Button>
           </div>
         </div>
 
+        {/* Tabla de órdenes de compra */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -141,13 +175,9 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {purchases.length > 0 ? (
-                purchases.map((purchase) => (
-                  
-                  <TableRow
-                    key={purchase.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  > 
+              {filteredPurchases.length > 0 ? (
+                filteredPurchases.map((purchase) => (
+                  <TableRow key={purchase.id} className="hover:bg-gray-50 transition-colors">
                     <TableCell className="font-medium">{purchase.id}</TableCell>
                     <TableCell>{new Date(purchase.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>{purchase.provider.name}</TableCell>
@@ -173,7 +203,9 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Ver detalles</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewDetails(purchase.id)}>
+                            Ver detalles
+                          </DropdownMenuItem>
                           <DropdownMenuItem>Editar</DropdownMenuItem>
                           <DropdownMenuItem>Eliminar</DropdownMenuItem>
                         </DropdownMenuContent>
@@ -183,7 +215,7 @@ export default function PurchasesData({ PurchasesData }: PurchaseDataProps) {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-4 text-gray-500">
                     No hay órdenes de compra disponibles.
                   </TableCell>
                 </TableRow>
