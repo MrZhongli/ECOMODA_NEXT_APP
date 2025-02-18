@@ -1,16 +1,16 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import React, { useState, useEffect } from 'react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Search, User, Download, PlusCircle } from 'lucide-react'
-import GenericTable from '@/components/commons/GenericTable'
+} from "@/components/ui/dropdown-menu";
+import { Search, User, Download, PlusCircle } from 'lucide-react';
+import GenericTable from '@/components/commons/GenericTable';
 
 // Definir el tipo de los datos del inventario
 type InventoryItem = {
@@ -23,7 +23,18 @@ type InventoryItem = {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-}
+  quantity?: number; // Añadir cantidad como opcional
+};
+
+type ProductInventory = {
+  code: string;
+  areaId: number;
+  quantity: number;
+  productId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 const InventoryManagement: React.FC = () => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
@@ -32,17 +43,37 @@ const InventoryManagement: React.FC = () => {
   const [collectionFilter, setCollectionFilter] = useState('Todas las colecciones');
 
   useEffect(() => {
-    const fetchInventory = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/products');
-        const data = await response.json();
-        setInventoryData(data.products);
+        // Obtener los productos
+        const productsResponse = await fetch('http://localhost:8000/products');
+        const productsData = await productsResponse.json();
+  
+        // Obtener el inventario
+        const inventoryResponse = await fetch('http://localhost:8000/product-inventorys');
+        const inventoryData = await inventoryResponse.json();
+  
+
+        console.log('Inventory Data:', inventoryData);
+  
+        const inventoryArray = Array.isArray(inventoryData) ? inventoryData : inventoryData.data;
+  
+        // Combinar los datos de los productos con el inventario
+        const combinedData = productsData.products.map((product: InventoryItem) => {
+          const inventoryItem = inventoryArray.find((item: ProductInventory) => item.productId === product.id);
+          return {
+            ...product,
+            quantity: inventoryItem ? inventoryItem.quantity : 0, // Si no hay inventario, la cantidad es 0
+          };
+        });
+  
+        setInventoryData(combinedData);
       } catch (error) {
-        console.error('Error fetching inventory data:', error);
+        console.error('Error fetching data:', error);
       }
     };
-
-    fetchInventory();
+  
+    fetchData();
   }, []);
 
   // Filtrar los datos del inventario según las búsquedas y filtros
@@ -58,30 +89,34 @@ const InventoryManagement: React.FC = () => {
     {
       key: 'name',
       header: 'Nombre',
-      formatter: (name: string) => <span className="font-medium">{name}</span>
+      formatter: (name: string) => <span className="font-medium">{name}</span>,
     },
     {
       key: 'size',
-      header: 'Talla'
+      header: 'Talla',
     },
     {
       key: 'price',
       header: 'Precio',
-      formatter: (price: string) => parseFloat(price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+      formatter: (price: string) => parseFloat(price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }),
+    },
+    {
+      key: 'quantity',
+      header: 'Cantidad',
     },
     {
       key: 'description',
-      header: 'Descripción'
-    }
-  ]
+      header: 'Descripción',
+    },
+  ];
 
   const handleDownloadReport = () => {
-    console.log('Descargando reporte de inventario...')
-  }
+    console.log('Descargando reporte de inventario...');
+  };
 
   const handleGenerateOrder = () => {
-    console.log('Generando orden de producción...')
-  }
+    console.log('Generando orden de producción...');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -184,7 +219,7 @@ const InventoryManagement: React.FC = () => {
         />
       </main>
     </div>
-  )
-}
+  );
+};
 
 export default InventoryManagement;
