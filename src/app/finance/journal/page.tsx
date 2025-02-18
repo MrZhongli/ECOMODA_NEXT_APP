@@ -16,43 +16,34 @@ import {
 } from "@/components/ui/table"
 import { PlusCircle, AlertCircle, CheckCircle } from 'lucide-react'
 
-interface AccountBalance {
+interface Journal {
     id: number
-    amountAvailable: string
-    accountId: number
-    createdAt: string
-    updatedAt: string
-    deletedAt: string | null
-}
-
-interface Account {
-    id: number
-    name: string
-    type: 'ACTIVO' | 'PASIVO' | 'CAPITAL' | 'INGRESO' | 'EGRESO'
-    createdAt: string
-    updatedAt: string
-    deletedAt: string | null
-    accountBalance: AccountBalance | null
+    date: string
+    ref: string
+    account: string
+    description: string
+    amount: string
+    type: 'DEBE' | 'HABER'
 }
 
 const JournalPage: React.FC = () => {
-    const [accounts, setAccounts] = useState<Account[]>([])
+    const [journals, setJournals] = useState<Journal[]>([])
     const [startDate, setStartDate] = useState<string>('')
     const [endDate, setEndDate] = useState<string>('')
     const router = useRouter()
 
     useEffect(() => {
-        const fetchAccounts = async () => {
+        const fetchJournals = async () => {
             try {
-                const response = await fetch('http://localhost:8000/accounts')
+                const response = await fetch('http://localhost:8000/journals')
                 const data = await response.json()
-                setAccounts(data.accounts)
+                setJournals(data.journals)
             } catch (error) {
-                console.error('Error fetching accounts:', error)
+                console.error('Error fetching journals:', error)
             }
         }
 
-        fetchAccounts()
+        fetchJournals()
     }, [])
 
     const handleManageRequests = () => {
@@ -63,33 +54,24 @@ const JournalPage: React.FC = () => {
         router.push('/finance/journal/journal-manual-entry')
     }
 
-    const filteredAccounts = accounts.filter(account =>
-        (!startDate || account.createdAt.split('T')[0] >= startDate) &&
-        (!endDate || account.createdAt.split('T')[0] <= endDate)
+    const filteredJournals = journals.filter(journal =>
+        (!startDate || journal.date.split('T')[0] >= startDate) &&
+        (!endDate || journal.date.split('T')[0] <= endDate)
     )
 
-    const calculateBalance = (account: Account) => {
-        if (!account.accountBalance) return 0
-        return parseFloat(account.accountBalance.amountAvailable)
+    const calculateTotal = (filteredJournals: Journal[], type: 'DEBE' | 'HABER') => {
+        return filteredJournals.reduce((sum, journal) => {
+            if (journal.type === type) {
+                return sum + parseFloat(journal.amount)
+            }
+            return sum
+        }, 0)
     }
 
-    const totalDebit = filteredAccounts.reduce((sum, account) => {
-        const balance = calculateBalance(account)
-        if (['ACTIVO', 'EGRESO'].includes(account.type)) {
-            return sum + balance
-        }
-        return sum
-    }, 0)
+    const totalDebit = calculateTotal(filteredJournals, 'DEBE')
+    const totalCredit = calculateTotal(filteredJournals, 'HABER')
 
-    const totalCredit = filteredAccounts.reduce((sum, account) => {
-        const balance = calculateBalance(account)
-        if (['PASIVO', 'CAPITAL', 'INGRESO'].includes(account.type)) {
-            return sum + balance
-        }
-        return sum
-    }, 0)
-
-    const isBalanced = Math.abs(totalDebit - totalCredit) < 0.01 // Consideramos un pequeño margen de error debido a los cálculos con decimales
+    const isBalanced = Math.abs(totalDebit - totalCredit) < 0.01
 
     return (
         <Card className="w-full">
@@ -146,40 +128,36 @@ const JournalPage: React.FC = () => {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Fecha</TableHead>
+                            <TableHead>Referencia</TableHead>
                             <TableHead>Cuenta</TableHead>
+                            <TableHead>Descripción</TableHead>
                             <TableHead>Tipo</TableHead>
-                            <TableHead className="text-right">Debe</TableHead>
-                            <TableHead className="text-right">Haber</TableHead>
+                            <TableHead className="text-right">Monto</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredAccounts.map((account) => {
-                            const balance = calculateBalance(account)
-                            const isDebit = ['ACTIVO', 'EGRESO'].includes(account.type)
-                            return (
-                                <TableRow key={account.id}>
-                                    <TableCell>{new Date(account.createdAt).toLocaleDateString()}</TableCell>
-                                    <TableCell>{account.name}</TableCell>
-                                    <TableCell>{account.type}</TableCell>
-                                    <TableCell className="text-right">
-                                        {isDebit ? balance.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) : '-'}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {!isDebit ? balance.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) : '-'}
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })}
+                        {filteredJournals.map((journal) => (
+                            <TableRow key={journal.id}>
+                                <TableCell>{new Date(journal.date).toLocaleDateString()}</TableCell>
+                                <TableCell>{journal.ref}</TableCell>
+                                <TableCell>{journal.account}</TableCell>
+                                <TableCell>{journal.description}</TableCell>
+                                <TableCell>{journal.type}</TableCell>
+                                <TableCell className="text-right">
+                                    {parseFloat(journal.amount).toLocaleString('es-ES', { style: 'currency', currency: 'USD' })}
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
                 <div className="mt-4 flex justify-between">
                     <div>
                         <span className="font-bold">Total Debe:</span>{' '}
-                        {totalDebit.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                        {totalDebit.toLocaleString('es-ES', { style: 'currency', currency: 'USD' })}
                     </div>
                     <div>
                         <span className="font-bold">Total Haber:</span>{' '}
-                        {totalCredit.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                        {totalCredit.toLocaleString('es-ES', { style: 'currency', currency: 'USD' })}
                     </div>
                 </div>
             </CardContent>

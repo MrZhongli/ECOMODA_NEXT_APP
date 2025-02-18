@@ -22,95 +22,163 @@ import {
 } from "@/components/ui/table"
 import { PlusCircle, Search } from 'lucide-react'
 
-// Tipos y enums basados en la estructura de datos proporcionada
-type RequestStatus = "EN PROCESO" | "CANCELADO" | "TERMINADO" | "EN ESPERA"
-
-interface RequestType {
-    id: number
-    name: string
-    automatized: boolean
-}
-
-interface Request {
+interface AccountRecord {
     id: number
     description: string
-    amount: number
-    status: RequestStatus
-    requestTypeId: number
+    amount: string
+    type: "DEBE" | "HABER"
+    accountId: number
     createdAt: string
     updatedAt: string
+    deletedAt: string | null
+}
+
+interface Account {
+    id: number
+    name: string
 }
 
 const JournalRequestManagement: React.FC = () => {
-    const [requests, setRequests] = useState<Request[]>([])
-    const [requestTypes, setRequestTypes] = useState<RequestType[]>([])
-    const [newRequest, setNewRequest] = useState<Partial<Request>>({
-        description: '',
-        amount: 0,
-        status: "EN PROCESO",
-        requestTypeId: 0,
-    })
+    const [accountRecords, setAccountRecords] = useState<AccountRecord[]>([])
+    const [accounts, setAccounts] = useState<Account[]>([])
     const [searchQuery, setSearchQuery] = useState('')
+    const [error, setError] = useState<string | null>(null)
+    const [description, setDescription] = useState('')
+    const [amount, setAmount] = useState('')
+    const [type, setType] = useState<"DEBE" | "HABER">("DEBE")
+    const [accountId, setAccountId] = useState<number | null>(null)
 
+    // Descripciones estándar
+    const standardDescriptions = [
+        "Pago de nómina",
+        "Compra de mercancía",
+        "Venta de productos",
+        "Pago de servicios públicos",
+        "Depósito en banco",
+        "Retiro de efectivo"
+    ]
+
+    // Función para cargar los registros contables
+    const fetchAccountRecords = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/account-records')
+            const data = await response.json()
+            setAccountRecords(data.accountRecords.sort((a: AccountRecord, b: AccountRecord) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+        } catch (error) {
+            console.error("Error fetching account records:", error)
+            setError("Error al cargar los registros contables.")
+        }
+    }
+
+    // Función para cargar las cuentas
+    const fetchAccounts = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/accounts')
+            const data = await response.json()
+            setAccounts(data.accounts)
+        } catch (error) {
+            console.error("Error fetching accounts:", error)
+            setError("Error al cargar las cuentas.")
+        }
+    }
+
+    // Cargar datos iniciales
     useEffect(() => {
-        // Aquí normalmente harías una llamada a la API para obtener los datos
-        // Por ahora, usaremos datos de ejemplo
-        setRequests([
-            { id: 1, description: "Compra de suministros", amount: 500, status: "EN PROCESO", requestTypeId: 1, createdAt: "2025-02-10T10:00:00Z", updatedAt: "2025-02-10T10:00:00Z" },
-            { id: 2, description: "Pago de nómina", amount: 5000, status: "TERMINADO", requestTypeId: 2, createdAt: "2025-02-09T09:00:00Z", updatedAt: "2025-02-09T15:00:00Z" },
-        ])
-        setRequestTypes([
-            { id: 1, name: "Compra", automatized: false },
-            { id: 2, name: "Nómina", automatized: true },
-        ])
+        fetchAccountRecords()
+        fetchAccounts()
     }, [])
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target
-        setNewRequest(prev => ({ ...prev, [name]: value }))
+    const getAccountName = (accountId: number) => {
+        const account = accounts.find(acc => acc.id === accountId)
+        return account ? account.name : 'Desconocido'
     }
 
-    const handleSelectChange = (name: string, value: string) => {
-        setNewRequest(prev => ({ ...prev, [name]: value }))
-    }
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        // Aquí normalmente enviarías la nueva solicitud a la API
-        const newId = requests.length + 1
-        const newRequestWithId = {
-            ...newRequest,
-            id: newId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        } as Request
-        setRequests(prev => [...prev, newRequestWithId])
-        setNewRequest({ description: '', amount: 0, status: "EN PROCESO", requestTypeId: 0 })
-    }
-
-    const filteredRequests = requests.filter(request =>
-        request.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        request.id.toString().includes(searchQuery)
+    const filteredRecords = accountRecords.filter(record =>
+        record.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        record.id.toString().includes(searchQuery)
     )
+
+    // Calcular el total del DEBE y el HABER
+    const totalDebe = accountRecords
+        .filter(record => record.type === "DEBE")
+        .reduce((sum, record) => sum + parseFloat(record.amount), 0)
+
+    const totalHaber = accountRecords
+        .filter(record => record.type === "HABER")
+        .reduce((sum, record) => sum + parseFloat(record.amount), 0)
+
+    // Determinar si está balanceado
+    const isBalanced = totalDebe === totalHaber
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        if (!description || !amount || !accountId) {
+            setError("Todos los campos son obligatorios.")
+            return
+        }
+
+        try {
+            const response = await fetch('http://localhost:8000/account-records', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    description,
+                    amount,
+                    type,
+                    accountId
+                }),
+            })
+
+            if (!response.ok) {
+                throw new Error("Error al crear el registro.")
+            }
+
+            // Limpiar el formulario
+            setDescription('')
+            setAmount('')
+            setType("DEBE")
+            setAccountId(null)
+            setError(null)
+
+            // Recargar los registros contables
+            await fetchAccountRecords()
+        } catch (error) {
+            console.error("Error creating account record:", error)
+            setError("Error al crear el registro.")
+        }
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <Card className="w-full max-w-4xl mx-auto">
                 <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-[#4d619d]">Gestión de Solicitudes para Libro Diario</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-[#4d619d]">Registros Contables</CardTitle>
                 </CardHeader>
                 <CardContent>
+                    {error && <div className="text-red-500 mb-4">{error}</div>}
                     <form onSubmit={handleSubmit} className="space-y-4 mb-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <Select onValueChange={(value) => setDescription(value)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar descripción estándar" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {standardDescriptions.map((desc, index) => (
+                                            <SelectItem key={index} value={desc}>{desc}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 <Textarea
                                     id="description"
-                                    name="description"
-                                    value={newRequest.description}
-                                    onChange={handleInputChange}
-                                    placeholder="Descripción de la solicitud"
-                                    className="w-full"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="O escribe una descripción manualmente"
+                                    className="w-full mt-2"
                                 />
                             </div>
                             <div>
@@ -118,36 +186,33 @@ const JournalRequestManagement: React.FC = () => {
                                 <Input
                                     type="number"
                                     id="amount"
-                                    name="amount"
-                                    value={newRequest.amount}
-                                    onChange={handleInputChange}
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
                                     placeholder="Monto"
                                     className="w-full"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                                <Select name="status" onValueChange={(value) => handleSelectChange("status", value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Seleccionar estado" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="EN PROCESO">En Proceso</SelectItem>
-                                        <SelectItem value="CANCELADO">Cancelado</SelectItem>
-                                        <SelectItem value="TERMINADO">Terminado</SelectItem>
-                                        <SelectItem value="EN ESPERA">En Espera</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label htmlFor="requestTypeId" className="block text-sm font-medium text-gray-700 mb-1">Tipo de Solicitud</label>
-                                <Select name="requestTypeId" onValueChange={(value) => handleSelectChange("requestTypeId", value)}>
+                                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                <Select onValueChange={(value: "DEBE" | "HABER") => setType(value)} value={type}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Seleccionar tipo" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {requestTypes.map(type => (
-                                            <SelectItem key={type.id} value={type.id.toString()}>{type.name}</SelectItem>
+                                        <SelectItem value="DEBE">Debe</SelectItem>
+                                        <SelectItem value="HABER">Haber</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 mb-1">Cuenta</label>
+                                <Select onValueChange={(value) => setAccountId(Number(value))}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar cuenta" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {accounts.map(account => (
+                                            <SelectItem key={account.id} value={account.id.toString()}>{account.name}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -155,55 +220,64 @@ const JournalRequestManagement: React.FC = () => {
                         </div>
                         <Button type="submit" className="w-full bg-[#f0627e] hover:bg-[#e05270] text-white">
                             <PlusCircle className="w-4 h-4 mr-2" />
-                            Crear Nueva Solicitud
+                            Crear Nuevo Registro
                         </Button>
                     </form>
-
                     <div className="mb-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <Input
                                 type="text"
-                                placeholder="Buscar solicitudes..."
+                                placeholder="Buscar registros..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-10"
                             />
                         </div>
                     </div>
-
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>ID</TableHead>
                                 <TableHead>Descripción</TableHead>
                                 <TableHead>Monto</TableHead>
-                                <TableHead>Estado</TableHead>
                                 <TableHead>Tipo</TableHead>
+                                <TableHead>Cuenta</TableHead>
                                 <TableHead>Fecha de Creación</TableHead>
+                                <TableHead>Balanceado</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredRequests.map((request) => (
-                                <TableRow key={request.id}>
-                                    <TableCell>{request.id}</TableCell>
-                                    <TableCell>{request.description}</TableCell>
-                                    <TableCell>{request.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</TableCell>
+                            {filteredRecords.map((record) => (
+                                <TableRow key={record.id}>
+                                    <TableCell>{record.id}</TableCell>
+                                    <TableCell>{record.description}</TableCell>
+                                    <TableCell>{parseFloat(record.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</TableCell>
+                                    <TableCell>{record.type}</TableCell>
+                                    <TableCell>{getAccountName(record.accountId)}</TableCell>
+                                    <TableCell>{new Date(record.createdAt).toLocaleDateString('es-ES')}</TableCell>
                                     <TableCell>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                      ${request.status === "TERMINADO" ? 'bg-green-100 text-green-800' :
-                                                request.status === "EN PROCESO" ? 'bg-yellow-100 text-yellow-800' :
-                                                    request.status === "CANCELADO" ? 'bg-red-100 text-red-800' :
-                                                        'bg-blue-100 text-blue-800'}`}>
-                                            {request.status}
-                                        </span>
+                                        {isBalanced ? (
+                                            <span className="text-green-600">Balanceado</span>
+                                        ) : (
+                                            <span className="text-red-600">No balanceado</span>
+                                        )}
                                     </TableCell>
-                                    <TableCell>{requestTypes.find(type => type.id === request.requestTypeId)?.name}</TableCell>
-                                    <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
+                    <div className="mt-4">
+                        <p className="text-sm text-gray-700">
+                            <strong>Total DEBE:</strong> {totalDebe.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                            <strong>Total HABER:</strong> {totalHaber.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                        </p>
+                        <p className={`text-sm ${isBalanced ? 'text-green-600' : 'text-red-600'}`}>
+                            <strong>Estado:</strong> {isBalanced ? "Balanceado" : "No balanceado"}
+                        </p>
+                    </div>
                 </CardContent>
             </Card>
         </div>
