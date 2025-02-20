@@ -1,15 +1,50 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FinancialStatsDashboard } from "@/components/FinancialStatsDashboard";
 import { LastSales } from "./LastSales";
+import { fetchSales } from '@/api/sales';
+
 
 const DashboardContainer = () => {
+    const [totalSales, setTotalSales] = useState(0);
+    const [activeUsers, setActiveUsers] = useState(0);
+    const [pendingOrders, setPendingOrders] = useState(0);
+    const [conversionRate, setConversionRate] = useState(0);
+
+    useEffect(() => {
+        const loadSalesData = async () => {
+            const sales = await fetchSales();
+            console.log(sales)
+            // Calcular el total de ventas
+            const total = sales.reduce((sum: number, sale: any) => {
+                return sum + sale.saleDetail.reduce((saleSum: number, detail: any) => {
+                    return saleSum + (parseFloat(detail.unitPrice) * detail.quantity);
+                }, 0);
+            }, 0);
+            setTotalSales(total);
+
+            // Calcular usuarios activos (suponiendo que cada venta es de un usuario único)
+            const uniqueCustomers = new Set(sales.map((sale: any) => sale.customerId));
+            setActiveUsers(uniqueCustomers.size);
+
+            // Calcular órdenes pendientes (suponiendo que las órdenes sin `deletedAt` están pendientes)
+            const pending = sales.filter((sale: any) => sale.deletedAt === null).length;
+            setPendingOrders(pending);
+
+            // Calcular tasa de conversión (esto es un ejemplo, ajusta según tu lógica de negocio)
+            const conversion = (sales.length / 100) * 5.4; // Ejemplo simple
+            setConversionRate(conversion);
+        };
+
+        loadSalesData();
+    }, []);
+
     const widgets = [
-        { title: "Total Ventas", value: "$12,300", description: "Este mes" },
-        { title: "Usuarios Activos", value: "1,245", description: "Este mes" },
-        { title: "Órdenes Pendientes", value: "37", description: "En proceso" },
-        { title: "Tasa de Conversión", value: "5.4%", description: "Últimos 30 días" },
+        { title: "Total Ventas", value: `$${totalSales.toFixed(2)}`, description: "Este mes" },
+        { title: "Usuarios Activos", value: activeUsers.toString(), description: "Este mes" },
+        { title: "Órdenes Pendientes", value: pendingOrders.toString(), description: "En proceso" },
+        { title: "Tasa de Conversión", value: `${conversionRate.toFixed(2)}%`, description: "Últimos 30 días" },
     ];
 
     return (

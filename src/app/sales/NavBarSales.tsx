@@ -10,10 +10,8 @@ type SalesSection = {
 };
 
 const salesSections: SalesSection[] = [
-    { name: 'Pedidos', route: '/sales/orders' },
-    { name: 'A Facturar', route: '/sales/invoices' },
-    { name: 'Informes', route: '/sales/reports' },
-    { name: 'Configuración', route: '/sales/settings' },
+    { name: 'Pedidos', route: '/sales/' },
+    { name: 'Facturas', route: '/sales/1' }
 ];
 
 export default function NavbarSales() {

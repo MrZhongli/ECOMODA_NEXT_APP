@@ -1,63 +1,87 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import React, { useState, useEffect } from 'react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Search, User, Download, PlusCircle } from 'lucide-react'
-import GenericTable from '@/components/commons/GenericTable'
+} from "@/components/ui/dropdown-menu";
+import { Search, User, Download, PlusCircle } from 'lucide-react';
+import GenericTable from '@/components/commons/GenericTable';
 
 // Definir el tipo de los datos del inventario
 type InventoryItem = {
   id: number;
   name: string;
-  category: string;
-  stock: number;
-  price: number;
   description: string;
-}
+  size: string;
+  price: string;
+  collectionId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  quantity?: number; // Añadir cantidad como opcional
+};
 
-// Datos de inventario con el campo "id"
-const inventoryData: InventoryItem[] = [
-  {
-    id: 1,
-    name: "Vestido Floral",
-    category: "Vestidos",
-    stock: 15,
-    price: 49.99,
-    description: "Vestido floral de temporada, ideal para primavera.",
-  },
-  {
-    id: 2,
-    name: "Pantalón Casual",
-    category: "Pantalones",
-    stock: 5,
-    price: 39.99,
-    description: "Pantalón casual cómodo para uso diario.",
-  },
-  // Agregar más ítems si es necesario
-];
+type ProductInventory = {
+  code: string;
+  areaId: number;
+  quantity: number;
+  productId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 const InventoryManagement: React.FC = () => {
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('Todas las categorías');
-  const [stockFilter, setStockFilter] = useState('Todas');
+  const [sizeFilter, setSizeFilter] = useState('Todas las tallas');
+  const [collectionFilter, setCollectionFilter] = useState('Todas las colecciones');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Obtener los productos
+        const productsResponse = await fetch('http://localhost:8000/products');
+        const productsData = await productsResponse.json();
+  
+        // Obtener el inventario
+        const inventoryResponse = await fetch('http://localhost:8000/product-inventorys');
+        const inventoryData = await inventoryResponse.json();
+  
+
+        console.log('Inventory Data:', inventoryData);
+  
+        const inventoryArray = Array.isArray(inventoryData) ? inventoryData : inventoryData.data;
+  
+        // Combinar los datos de los productos con el inventario
+        const combinedData = productsData.products.map((product: InventoryItem) => {
+          const inventoryItem = inventoryArray.find((item: ProductInventory) => item.productId === product.id);
+          return {
+            ...product,
+            quantity: inventoryItem ? inventoryItem.quantity : 0, // Si no hay inventario, la cantidad es 0
+          };
+        });
+  
+        setInventoryData(combinedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+  
+    fetchData();
+  }, []);
 
   // Filtrar los datos del inventario según las búsquedas y filtros
   const filteredInventory = inventoryData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'Todas las categorías' || item.category === categoryFilter;
-    const matchesStock =
-      stockFilter === 'Todas' ||
-      (stockFilter === 'En stock' && item.stock > 10) ||
-      (stockFilter === 'Stock bajo' && item.stock > 0 && item.stock <= 10) ||
-      (stockFilter === 'Fuera de stock' && item.stock === 0);
-    return matchesSearch && matchesCategory && matchesStock;
+    const matchesSize = sizeFilter === 'Todas las tallas' || item.size === sizeFilter;
+    const matchesCollection = collectionFilter === 'Todas las colecciones' || item.collectionId.toString() === collectionFilter;
+    return matchesSearch && matchesSize && matchesCollection;
   });
 
   // Definir columnas para la tabla
@@ -65,39 +89,34 @@ const InventoryManagement: React.FC = () => {
     {
       key: 'name',
       header: 'Nombre',
-      formatter: (name: string) => <span className="font-medium">{name}</span>
+      formatter: (name: string) => <span className="font-medium">{name}</span>,
     },
     {
-      key: 'category',
-      header: 'Categoría'
-    },
-    {
-      key: 'stock',
-      header: 'Existencias',
-      formatter: (stock: number) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold
-          ${stock === 0 ? 'bg-red-100 text-red-800' :
-            stock <= 10 ? 'bg-yellow-100 text-yellow-800' :
-              'bg-green-100 text-green-800'}`}>
-          {stock === 0 ? 'Fuera de stock' :
-            stock <= 10 ? 'Stock bajo' : 'En stock'} ({stock})
-        </span>
-      )
+      key: 'size',
+      header: 'Talla',
     },
     {
       key: 'price',
       header: 'Precio',
-      formatter: (price: number) => price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
-    }
-  ]
+      formatter: (price: string) => parseFloat(price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }),
+    },
+    {
+      key: 'quantity',
+      header: 'Cantidad',
+    },
+    {
+      key: 'description',
+      header: 'Descripción',
+    },
+  ];
 
   const handleDownloadReport = () => {
-    console.log('Descargando reporte de inventario...')
-  }
+    console.log('Descargando reporte de inventario...');
+  };
 
   const handleGenerateOrder = () => {
-    console.log('Generando orden de producción...')
-  }
+    console.log('Generando orden de producción...');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -154,18 +173,21 @@ const InventoryManagement: React.FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full md:w-auto">
-                {categoryFilter} <span className="ml-2">▼</span>
+                {sizeFilter} <span className="ml-2">▼</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setCategoryFilter('Todas las categorías')}>
-                Todas las categorías
+              <DropdownMenuItem onClick={() => setSizeFilter('Todas las tallas')}>
+                Todas las tallas
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCategoryFilter('Vestidos')}>
-                Vestidos
+              <DropdownMenuItem onClick={() => setSizeFilter('S')}>
+                S
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCategoryFilter('Pantalones')}>
-                Pantalones
+              <DropdownMenuItem onClick={() => setSizeFilter('M')}>
+                M
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSizeFilter('L')}>
+                L
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -173,21 +195,18 @@ const InventoryManagement: React.FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full md:w-auto">
-                {stockFilter} <span className="ml-2">▼</span>
+                {collectionFilter} <span className="ml-2">▼</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setStockFilter('Todas')}>
-                Todas
+              <DropdownMenuItem onClick={() => setCollectionFilter('Todas las colecciones')}>
+                Todas las colecciones
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStockFilter('En stock')}>
-                En stock
+              <DropdownMenuItem onClick={() => setCollectionFilter('1')}>
+                Colección 1
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStockFilter('Stock bajo')}>
-                Stock bajo
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStockFilter('Fuera de stock')}>
-                Fuera de stock
+              <DropdownMenuItem onClick={() => setCollectionFilter('2')}>
+                Colección 2
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -200,7 +219,7 @@ const InventoryManagement: React.FC = () => {
         />
       </main>
     </div>
-  )
-}
+  );
+};
 
 export default InventoryManagement;
