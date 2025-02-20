@@ -140,12 +140,12 @@ const NewBudget = () => {
 	return (
 		<div className="p-4 bg-white rounded-md shadow-md grid grid-cols-2 gap-4">
 			<div>
-				<h2 className="text-lg font-bold mb-4">New Sale</h2>
+				<h2 className="text-lg font-bold mb-4">Informacion de la Venta</h2>
 
-				<label className="block mb-2">Customer:</label>
+				<label className="block mb-2">Cliente:</label>
 				<Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
 					<SelectTrigger className="w-full mb-4">
-						<SelectValue placeholder="Select a customer" />
+						<SelectValue placeholder="Selecciona un cliente" />
 					</SelectTrigger>
 					<SelectContent>
 						{customers.map((c) => (
@@ -162,7 +162,7 @@ const NewBudget = () => {
 					onValueChange={(method) => setPaymentMethod(method)}
 				>
 					<SelectTrigger className="w-full mb-4">
-						<SelectValue placeholder="Select a payment method" />
+						<SelectValue placeholder="Selecciona un método de pago" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="TRANSFERENCIA">Transferencia</SelectItem>
@@ -170,7 +170,7 @@ const NewBudget = () => {
 					</SelectContent>
 				</Select>
 
-				<label className="block mb-2">Branch:</label>
+				<label className="block mb-2">Sucursal:</label>
 				<Input
 					type="number"
 					value={branchId ?? ""}
@@ -178,7 +178,7 @@ const NewBudget = () => {
 					className="mb-4"
 				/>
 
-				<label className="block mb-2">Description:</label>
+				<label className="block mb-2">Descripcion:</label>
 				<Input
 					type="text"
 					value={description}
@@ -188,10 +188,10 @@ const NewBudget = () => {
 			</div>
 
 			<div>
-				<label className="block mb-2">Products:</label>
+				<label className="block mb-2">Productos:</label>
 				<Select onValueChange={(value) => addProductToSale(Number(value))}>
 					<SelectTrigger className="w-full mb-4">
-						<SelectValue placeholder="Select a product" />
+						<SelectValue placeholder="Selecciona un producto" />
 					</SelectTrigger>
 					<SelectContent>
 						{products.map((p) => (
@@ -202,17 +202,17 @@ const NewBudget = () => {
 					</SelectContent>
 				</Select>
 
-				<h3 className="font-bold mt-4 mb-2">Sale Details</h3>
+				<h3 className="font-bold mt-4 mb-2">Detalles de la Venta</h3>
 				{saleDetails.length === 0 ? (
-					<p>No products added.</p>
+					<p>No se han añadido productos.</p>
 				) : (
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Product</TableHead>
-								<TableHead>Quantity</TableHead>
-								<TableHead>Unit Price</TableHead>
-								<TableHead>Actions</TableHead>
+								<TableHead>Producto</TableHead>
+								<TableHead>Cantidad</TableHead>
+								<TableHead>Precio Unitario</TableHead>
+								<TableHead>Acciones</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -220,7 +220,9 @@ const NewBudget = () => {
 								const product = products.find((p) => p.id === detail.productId);
 								return (
 									<TableRow key={index}>
-										<TableCell>{product ? product.name : "Unknown"}</TableCell>
+										<TableCell>
+											{product ? product.name : "Desconocido"}
+										</TableCell>
 										<TableCell>
 											<Input
 												type="number"
@@ -239,7 +241,7 @@ const NewBudget = () => {
 												onClick={() => removeProductFromSale(index)}
 												size="sm"
 											>
-												Remove
+												Eliminar
 											</Button>
 										</TableCell>
 									</TableRow>
